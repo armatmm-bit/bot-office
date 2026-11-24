@@ -52,10 +52,15 @@ table.pt tr.past td{color:#7d8a97}
 #card .row b{color:#9fb3c8;font-weight:500;display:block;font-size:11px;text-transform:uppercase}
 #card .x{position:absolute;right:10px;top:8px;background:none;border:0;color:#9fb3c8;font-size:22px;cursor:pointer}
 #cStatus{color:#c9f5dc;font-weight:600}
+#zoomBtns{position:fixed;right:346px;bottom:16px;z-index:25;display:flex;flex-direction:column;gap:8px}
+#zoomBtns button{width:52px;height:52px;border:1px solid #3a4654;border-radius:14px;background:#202833;color:#fff;font-size:28px;font-weight:600;line-height:1;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.45);padding:0;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#zoomBtns #zReset{font-size:12px;font-weight:600;letter-spacing:.2px}
+#zoomBtns button:active{background:#2f7d5b;color:#fff}
 @media (max-width:820px){
  #view,#labels{right:0;bottom:38vh}
  #side{top:auto;height:38vh;width:auto;left:0;border-left:0;border-top:1px solid #2c3540}
  #card{bottom:calc(38vh + 10px)}
+ #zoomBtns{right:12px;bottom:calc(38vh + 16px)}
 }
 </style>
 </head>
@@ -74,6 +79,11 @@ table.pt tr.past td{color:#7d8a97}
 </div>
 <div id="view"></div>
 <div id="labels"></div>
+<div id="zoomBtns">
+ <button type="button" id="zIn" title="Приблизить">+</button>
+ <button type="button" id="zOut" title="Отдалить">−</button>
+ <button type="button" id="zReset" title="Сбросить вид">сброс</button>
+</div>
 <div id="side">
  <h2>Намаз · Астана</h2>
  <div class="small" id="dateLine"></div>
@@ -107,7 +117,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 </script>
 <script>'use strict';
 (function(){
-const BUILD = 7;
+const BUILD = 8;
 const BOTDATA = {"Grok Bot": ["dir", "Директор офиса — главный бот, распределяет задачи", ["распределяет задачи между ботами", "проверяет отчёты отделов", "планирует день", "разбирает входящие запросы"]], "Power Up": ["pu", "Аренда пауэрбанков: станции и точки", ["проверяет загрузку станций", "сверяет выдачи за день", "ищет новые точки"]], "Сайт Power Up": ["pu", "Сайт и лендинг Power Up", ["правит страницу сайта", "проверяет заявки с сайта"]], "Платформа Управления Power Up": ["pu", "Платформа управления станциями", ["обновляет панель станций", "проверяет статусы станций"]], "Power Up Turkey": ["pu", "Запуск Power Up в Турции", ["изучает рынок Турции", "готовит план запуска"]], "KPI для PowerUP": ["pu", "KPI и метрики Power Up", ["считает KPI за неделю", "строит график выдач"]], "Баланс Для Инвесторов Power Up": ["pu", "Баланс и отчёты для инвесторов", ["сводит баланс", "готовит отчёт инвесторам"]], "Таблица Инвесторов": ["pu", "Таблица инвесторов и выплат", ["обновляет таблицу инвесторов", "сверяет выплаты"]], "KAZSAFETY": ["kz", "СИЗ и спецодежда: продажи", ["готовит коммерческое предложение", "сверяет остатки СИЗ"]], "Обучение KAZSAFETY": ["kz", "Обучение по охране труда", ["готовит программу обучения", "проверяет тесты"]], "CIOSH": ["kz", "Курсы и сертификация CIOSH", ["собирает материалы курса", "готовит гайд"]], "Финансы": ["fin", "Финансы, выписки и расходы", ["разбирает выписку", "считает расходы по категориям"]], "кредит даму": ["fin", "Кредит по программам Даму", ["сверяет условия программ", "готовит пакет документов"]], "Кредит - Сабит": ["fin", "Кредит — Сабит", ["считает график платежей", "проверяет документы"]], "Сбор Новостей По Кредитам В Рк": ["fin", "Новости кредитования в РК", ["собирает новости по кредитам", "делает дайджест"]], "Юрист": ["fin", "Договоры и правовые вопросы", ["проверяет договор", "готовит правовую справку"]], "Поездка Китай": ["trip", "Поездка в Китай", ["уточняет маршрут", "проверяет билеты и отели"]], "Переписка Китай": ["trip", "Переписка с китайскими поставщиками", ["отвечает поставщику", "сверяет счёт поставщика"]], "Переводчик": ["trip", "Перевод китайский → русский", ["переводит сообщение", "переводит документ"]], "Visa Англия": ["trip", "Виза в Великобританию", ["проверяет список документов", "следит за статусом заявки"]], "Джет наблюдение": ["trip", "Наблюдение за рейсами", ["отслеживает рейс", "проверяет изменения расписания"]], "Почта": ["me", "Gmail armat.mm@gmail.com", ["разбирает входящие", "сортирует письма"]], "Календарь": ["me", "Календарь и встречи (ресепшн)", ["встречает гостей на ресепшне", "сверяет встречи на неделю"]], "Здоровье": ["me", "Здоровье и показатели", ["смотрит показатели сна", "сводит пульс за неделю"]], "Калории": ["me", "Учёт калорий", ["считает калории за день", "записывает приём пищи"]], "Шежере": ["me", "Шежере — родословная", ["уточняет ветку рода", "оформляет древо"]], "Квартира Алматы": ["me", "Квартира в Алматы", ["проверяет коммунальные платежи", "сверяет договор найма"]], "What App Таргет": ["edu", "Таргет и рассылки WhatsApp", ["настраивает рассылку", "готовит креатив"]], "Ai Сообщесво По Средам": ["edu", "AI-сообщество по средам", ["собирает темы встречи", "готовит анонс"]], "ИИ видео мастерклас": ["edu", "Мастер-класс по ИИ-видео", ["монтирует пример", "готовит сценарий урока"]]};
 document.getElementById('buildTag').textContent = 'BUILD ' + BUILD;
 
@@ -562,6 +572,9 @@ function updateBots(dtReal){
 }
 
 // ---------- cameras & controls ----------
+const ORBIT0={az:-0.45,el:0.95,dist:44,tx:22,tz:15};
+const TOP0={cx:22,cz:15,h:17};
+const ZLIM={dmin:5,dmax:120,hmin:3,hmax:40};
 function camera(){return mode==='3d'?persp:ortho;}
 function resize(){const r=view.getBoundingClientRect(); renderer.setSize(r.width,r.height,false); persp.aspect=r.width/Math.max(1,r.height); persp.updateProjectionMatrix(); updateOrtho();}
 function updateOrtho(){const r=view.getBoundingClientRect(); const a=r.width/Math.max(1,r.height); ortho.left=-topv.h*a; ortho.right=topv.h*a; ortho.top=topv.h; ortho.bottom=-topv.h; ortho.updateProjectionMatrix();}
@@ -572,22 +585,81 @@ function updateCams(){
 function setView(m){mode=m; labelsEl.classList.toggle('topmode',m==='top'); document.getElementById('v3d').classList.toggle('on',m==='3d'); document.getElementById('vtop').classList.toggle('on',m==='top');}
 document.getElementById('v3d').onclick=()=>setView('3d'); document.getElementById('vtop').onclick=()=>setView('top');
 window.addEventListener('resize',resize);
-const cvs=renderer.domElement; const ptrs=new Map(); let downPos=null, moved=0, pinch0=0;
-cvs.addEventListener('contextmenu',e=>e.preventDefault());
-cvs.addEventListener('pointerdown',e=>{cvs.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY,b:e.button,shift:e.shiftKey}); downPos={x:e.clientX,y:e.clientY}; moved=0; if(ptrs.size===2){const [a,c]=[...ptrs.values()]; pinch0=Math.hypot(a.x-c.x,a.y-c.y);} });
-cvs.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId); if(!p) return; const dx=e.clientX-p.x, dy=e.clientY-p.y; moved+=Math.abs(dx)+Math.abs(dy);
-  if(ptrs.size===2){const [a,c]=[...ptrs.values()]; p.x=e.clientX;p.y=e.clientY; const d=Math.hypot(a.x-c.x,a.y-c.y); if(pinch0>0){zoom(pinch0/d);} pinch0=d; return;}
-  p.x=e.clientX; p.y=e.clientY; const pan=(p.b===2||p.shift);
-  if(mode==='3d'&&!pan){orbit.az-=dx*0.006; orbit.el=Math.min(1.5,Math.max(0.12,orbit.el+dy*0.005));}
-  else if(mode==='3d'){const s=orbit.dist*0.0015; orbit.tx-= (dx*Math.cos(orbit.az)+dy*Math.sin(orbit.az))*s; orbit.tz-= (-dx*Math.sin(orbit.az)+dy*Math.cos(orbit.az))*s;}
-  else {const r=view.getBoundingClientRect(); const s=2*topv.h/r.height; topv.cx-=dx*s; topv.cz-=dy*s;}
-});
-cvs.addEventListener('pointerup',e=>{ptrs.delete(e.pointerId); if(moved<6&&downPos) pick(e.clientX,e.clientY); downPos=null;});
-cvs.addEventListener('pointercancel',e=>ptrs.delete(e.pointerId));
-cvs.addEventListener('wheel',e=>{e.preventDefault(); zoom(Math.exp(e.deltaY*0.001));},{passive:false});
-function zoom(f){ if(mode==='3d') orbit.dist=Math.min(120,Math.max(5,orbit.dist*f)); else topv.h=Math.min(40,Math.max(3,topv.h*f)); }
+const cvs=renderer.domElement; const ptrs=new Map(); let downPos=null, moved=0, pinch0=0, pinchMid=null;
 const ray=new THREE.Raycaster();
-function pick(cx,cy){const r=view.getBoundingClientRect(); const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1); ray.setFromCamera(v,camera()); const hit=ray.intersectObjects(pickables,false)[0]; if(hit) openCard(hit.object.userData.bot);}
+const _plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+const _hit=new THREE.Vector3();
+function groundPoint(cx,cy){
+  const r=view.getBoundingClientRect();
+  const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1);
+  updateCams();
+  ray.setFromCamera(v,camera());
+  return ray.ray.intersectPlane(_plane,_hit)?_hit.clone():null;
+}
+function zoom(f,cx,cy){
+  const p0=(cx!=null&&cy!=null)?groundPoint(cx,cy):null;
+  if(mode==='3d') orbit.dist=Math.min(ZLIM.dmax,Math.max(ZLIM.dmin,orbit.dist*f));
+  else topv.h=Math.min(ZLIM.hmax,Math.max(ZLIM.hmin,topv.h*f));
+  updateCams();
+  if(p0){
+    const p1=groundPoint(cx,cy);
+    if(p1){
+      if(mode==='3d'){orbit.tx+=p0.x-p1.x; orbit.tz+=p0.z-p1.z;}
+      else {topv.cx+=p0.x-p1.x; topv.cz+=p0.z-p1.z;}
+      updateCams();
+    }
+  }
+}
+function panBy(dx,dy){
+  if(mode==='3d'){
+    const s=orbit.dist*0.0015;
+    orbit.tx-=(dx*Math.cos(orbit.az)+dy*Math.sin(orbit.az))*s;
+    orbit.tz-=(-dx*Math.sin(orbit.az)+dy*Math.cos(orbit.az))*s;
+  } else {
+    const r=view.getBoundingClientRect(); const s=2*topv.h/r.height;
+    topv.cx-=dx*s; topv.cz-=dy*s;
+  }
+}
+function zoomStep(dir){
+  const r=view.getBoundingClientRect();
+  zoom(Math.pow(1.25,dir), r.left+r.width/2, r.top+r.height/2);
+}
+function resetCam(){
+  if(mode==='3d') Object.assign(orbit,{az:ORBIT0.az,el:ORBIT0.el,dist:ORBIT0.dist,tx:ORBIT0.tx,tz:ORBIT0.tz});
+  else Object.assign(topv,{cx:TOP0.cx,cz:TOP0.cz,h:TOP0.h});
+  updateCams();
+}
+document.getElementById('zIn').onclick=()=>zoomStep(-1);
+document.getElementById('zOut').onclick=()=>zoomStep(1);
+document.getElementById('zReset').onclick=()=>resetCam();
+cvs.addEventListener('contextmenu',e=>e.preventDefault());
+cvs.addEventListener('pointerdown',e=>{
+  try{cvs.setPointerCapture(e.pointerId);}catch(err){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY,b:e.button,shift:e.shiftKey});
+  downPos={x:e.clientX,y:e.clientY}; moved=0;
+  if(ptrs.size===2){const [a,c]=[...ptrs.values()]; pinch0=Math.hypot(a.x-c.x,a.y-c.y); pinchMid={x:(a.x+c.x)/2,y:(a.y+c.y)/2};}
+});
+cvs.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId); if(!p) return;
+  const dx=e.clientX-p.x, dy=e.clientY-p.y; moved+=Math.abs(dx)+Math.abs(dy);
+  if(ptrs.size===2){
+    p.x=e.clientX; p.y=e.clientY;
+    const [a,c]=[...ptrs.values()];
+    const d=Math.hypot(a.x-c.x,a.y-c.y);
+    const mid={x:(a.x+c.x)/2,y:(a.y+c.y)/2};
+    if(pinch0>0) zoom(pinch0/d, mid.x, mid.y);
+    if(pinchMid) panBy(mid.x-pinchMid.x, mid.y-pinchMid.y);
+    pinch0=d; pinchMid=mid; return;
+  }
+  p.x=e.clientX; p.y=e.clientY;
+  const pan=(p.b===2||p.b===1||p.shift);
+  if(mode==='3d'&&!pan){orbit.az-=dx*0.006; orbit.el=Math.min(1.5,Math.max(0.12,orbit.el+dy*0.005));}
+  else panBy(dx,dy);
+});
+cvs.addEventListener('pointerup',e=>{ptrs.delete(e.pointerId); if(ptrs.size<2){pinch0=0;pinchMid=null;} if(moved<6&&downPos) pick(e.clientX,e.clientY); downPos=null;});
+cvs.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId); if(ptrs.size<2){pinch0=0;pinchMid=null;}});
+cvs.addEventListener('wheel',e=>{e.preventDefault(); zoom(Math.exp(e.deltaY*0.001), e.clientX, e.clientY);},{passive:false});
+function pick(cx,cy){const r=view.getBoundingClientRect(); const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1); updateCams(); ray.setFromCamera(v,camera()); const hit=ray.intersectObjects(pickables,false)[0]; if(hit) openCard(hit.object.userData.bot);}
 
 // ---------- card ----------
 let cardBot=null;
@@ -669,7 +741,7 @@ if(/^https?:$/.test(location.protocol)){
 }
 
 // test / debug hooks
-window.__office={BUILD,bots,sendNafl,naflSeek,NAFL_SPOTS,naflStatus:()=>naflBots().map(b=>b.name+': '+botStatus(b)),startPrayer,seekStep,snapToSpots,endPrayer,setView,setSpeed,openCard:n=>openCard(byName(n)),orbit,topv,
+window.__office={BUILD,bots,sendNafl,naflSeek,NAFL_SPOTS,naflStatus:()=>naflBots().map(b=>b.name+': '+botStatus(b)),startPrayer,seekStep,snapToSpots,endPrayer,setView,setSpeed,openCard:n=>openCard(byName(n)),orbit,topv,zoom,zoomStep,resetCam,groundPoint,ZLIM,ORBIT0,TOP0,
   get prayer(){return prayer;}, status:prayerStatus, SPOTS, MIHRAB, total:TOTAL_AYAT, schedule:()=>scheduleFor(simMs).map(e=>e.name+' '+fmtMs(e.ms)),
   setT:(t)=>{if(prayer)prayer.t=t;}, fmt:fmtMs};
 })();
