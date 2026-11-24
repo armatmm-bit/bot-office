@@ -37,6 +37,10 @@ table.pt tr.past td{color:#7d8a97}
 .bar{height:10px;background:#26303b;border-radius:5px;overflow:hidden;margin:6px 0}
 .bar>div{height:100%;background:linear-gradient(90deg,#2f9e6b,#9be15d)}
 #prayerBox{background:#10261b;border:1px solid #2f7d5b;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:6px;display:none}
+#naflBox{background:#132a1a;border:1px solid #4caf6e;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:6px;display:none}
+#naflBox .st{font-size:13px;font-weight:600;color:#c9f5dc;margin-bottom:4px}
+#toast{position:fixed;left:16px;top:62px;max-width:min(640px,calc(100vw - 360px));background:#0f3d25;color:#fff;border:1px solid #6fd3a0;border-radius:10px;padding:8px 12px;font-size:13px;z-index:40;display:none;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+@media (max-width:820px){#toast{max-width:calc(100vw - 32px)}}
 #prayerBox .st{font-size:14px;font-weight:600;color:#c9f5dc}
 #tasks{font-size:12px;line-height:1.45}
 #tasks .t{display:flex;gap:6px}
@@ -65,6 +69,7 @@ table.pt tr.past td{color:#7d8a97}
  <button class="btn" id="demoBtn">Начать ближайший намаз сейчас (демо)</button>
  <select id="demoPick" title="Демо другого намаза"><option value="">другой намаз…</option><option value="fajr">Фаджр</option><option value="dhuhr">Зухр</option><option value="jumua">Джума</option><option value="asr">Аср</option><option value="maghrib">Магриб</option><option value="isha">Иша (с витром)</option></select>
  <button class="btn gray" id="stopBtn" style="display:none">Завершить намаз</button>
+ <button class="btn" id="naflBtn" style="background:#1f6b3f">Нафиль-намаз (7 свободных)</button>
  <label class="ck"><input type="checkbox" id="qlines" checked> линии кыблы</label>
 </div>
 <div id="view"></div>
@@ -75,6 +80,7 @@ table.pt tr.past td{color:#7d8a97}
  <table class="pt" id="ptable"></table>
  <div class="small" id="nextLine" style="margin-top:6px"></div>
  <div id="prayerBox"><div class="st" id="pStatus"></div><div class="small" id="pSub"></div></div>
+ <div id="naflBox"><div class="st" id="nStatus"></div><div class="small" id="nSub"></div></div>
  <div class="small" style="margin-top:6px">Расчёт в браузере: Фаджр 18°, Иша 17° (MWL), Аср по ханафитскому мазхабу (тень = 2× + тень полудня), поправка для высоких широт по углу. Время UTC+5. Возможна разница в 1–3 минуты с официальным расписанием ДУМК.</div>
  <h2>Доска · Общий хатм</h2>
  <div id="khatmTitle" style="font-size:15px;font-weight:600"></div>
@@ -84,6 +90,7 @@ table.pt tr.past td{color:#7d8a97}
  <div id="tasks"></div>
  <div class="small" style="margin-top:10px">Статусы ботов на этой странице — симуляция, а не реальные действия ботов.</div>
 </div>
+<div id="toast"></div>
 <div id="card"><button class="x" id="cClose">×</button><h3 id="cName"></h3><span class="dept" id="cDept"></span>
  <div class="row"><b>Роль</b><span id="cRole"></span></div>
  <div class="row"><b>Текущий статус</b><span id="cStatus"></span></div>
@@ -100,7 +107,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 </script>
 <script>'use strict';
 (function(){
-const BUILD = 6;
+const BUILD = 7;
 const BOTDATA = {"Grok Bot": ["dir", "Директор офиса — главный бот, распределяет задачи", ["распределяет задачи между ботами", "проверяет отчёты отделов", "планирует день", "разбирает входящие запросы"]], "Power Up": ["pu", "Аренда пауэрбанков: станции и точки", ["проверяет загрузку станций", "сверяет выдачи за день", "ищет новые точки"]], "Сайт Power Up": ["pu", "Сайт и лендинг Power Up", ["правит страницу сайта", "проверяет заявки с сайта"]], "Платформа Управления Power Up": ["pu", "Платформа управления станциями", ["обновляет панель станций", "проверяет статусы станций"]], "Power Up Turkey": ["pu", "Запуск Power Up в Турции", ["изучает рынок Турции", "готовит план запуска"]], "KPI для PowerUP": ["pu", "KPI и метрики Power Up", ["считает KPI за неделю", "строит график выдач"]], "Баланс Для Инвесторов Power Up": ["pu", "Баланс и отчёты для инвесторов", ["сводит баланс", "готовит отчёт инвесторам"]], "Таблица Инвесторов": ["pu", "Таблица инвесторов и выплат", ["обновляет таблицу инвесторов", "сверяет выплаты"]], "KAZSAFETY": ["kz", "СИЗ и спецодежда: продажи", ["готовит коммерческое предложение", "сверяет остатки СИЗ"]], "Обучение KAZSAFETY": ["kz", "Обучение по охране труда", ["готовит программу обучения", "проверяет тесты"]], "CIOSH": ["kz", "Курсы и сертификация CIOSH", ["собирает материалы курса", "готовит гайд"]], "Финансы": ["fin", "Финансы, выписки и расходы", ["разбирает выписку", "считает расходы по категориям"]], "кредит даму": ["fin", "Кредит по программам Даму", ["сверяет условия программ", "готовит пакет документов"]], "Кредит - Сабит": ["fin", "Кредит — Сабит", ["считает график платежей", "проверяет документы"]], "Сбор Новостей По Кредитам В Рк": ["fin", "Новости кредитования в РК", ["собирает новости по кредитам", "делает дайджест"]], "Юрист": ["fin", "Договоры и правовые вопросы", ["проверяет договор", "готовит правовую справку"]], "Поездка Китай": ["trip", "Поездка в Китай", ["уточняет маршрут", "проверяет билеты и отели"]], "Переписка Китай": ["trip", "Переписка с китайскими поставщиками", ["отвечает поставщику", "сверяет счёт поставщика"]], "Переводчик": ["trip", "Перевод китайский → русский", ["переводит сообщение", "переводит документ"]], "Visa Англия": ["trip", "Виза в Великобританию", ["проверяет список документов", "следит за статусом заявки"]], "Джет наблюдение": ["trip", "Наблюдение за рейсами", ["отслеживает рейс", "проверяет изменения расписания"]], "Почта": ["me", "Gmail armat.mm@gmail.com", ["разбирает входящие", "сортирует письма"]], "Календарь": ["me", "Календарь и встречи (ресепшн)", ["встречает гостей на ресепшне", "сверяет встречи на неделю"]], "Здоровье": ["me", "Здоровье и показатели", ["смотрит показатели сна", "сводит пульс за неделю"]], "Калории": ["me", "Учёт калорий", ["считает калории за день", "записывает приём пищи"]], "Шежере": ["me", "Шежере — родословная", ["уточняет ветку рода", "оформляет древо"]], "Квартира Алматы": ["me", "Квартира в Алматы", ["проверяет коммунальные платежи", "сверяет договор найма"]], "What App Таргет": ["edu", "Таргет и рассылки WhatsApp", ["настраивает рассылку", "готовит креатив"]], "Ai Сообщесво По Средам": ["edu", "AI-сообщество по средам", ["собирает темы встречи", "готовит анонс"]], "ИИ видео мастерклас": ["edu", "Мастер-класс по ИИ-видео", ["монтирует пример", "готовит сценарий урока"]]};
 document.getElementById('buildTag').textContent = 'BUILD ' + BUILD;
 
@@ -162,9 +169,8 @@ const PRAYERS={
  maghrib:{name:'Магриб',units:[['фард',3],['сунна',2]]},
  isha:{name:'Иша',units:[['сунна',4],['фард',4],['сунна',2],['витр (ваджиб)',3]]}
 };
-function buildSteps(key){
-  const P=PRAYERS[key], S=[];
-  for(const [type,n] of P.units){
+function unitSteps(units,S){
+  for(const [type,n] of units){
     const fard=type.startsWith('фард'), witr=type.startsWith('витр');
     const push=(label,pose,dur,r)=>S.push({label,pose,dur,type,r,n});
     for(let r=1;r<=n;r++){
@@ -178,12 +184,18 @@ function buildSteps(key){
       else push('подъём','stand',2,r);
     }
   }
+  return S;
+}
+function buildSteps(key){
+  const S=unitSteps(PRAYERS[key].units,[]);
   S.push({after:'kursi',label:'Аят аль-Курси',pose:'sit',dur:18});
   S.push({after:'tasbih',label:'Тасбихат',pose:'sit',dur:100*0.7});
   S.push({after:'dua',label:'Дуа',pose:'dua',dur:10});
   S.push({after:'wipe',label:'Дуа · протирание лица',pose:'wipe',dur:2.5});
   return S;
 }
+const NAFL_STATUS='Нафиль-намаз, 2 ракаата';
+function buildNaflSteps(){const S=unitSteps([['нафиль',2]],[]); S[0].label='ният · 2 ракаата нафиля'; return S;}
 function tasbihText(el){const c=Math.min(99,Math.floor(el/0.7)); if(c<33)return 'СубханАллах '+(c+1)+'/33'; if(c<66)return 'Альхамдулиллях '+(c-32)+'/33'; return 'Аллаху акбар '+(c-65)+'/34';}
 
 // ---------- THREE setup ----------
@@ -262,6 +274,10 @@ const PERP={x:-AX.z,z:AX.x};
 const SPOTS=[];
 SPOTS.push({x:MIHRAB.x-AX.x*1.9, z:MIHRAB.z-AX.z*1.9, imam:true});
 for(let k=1;k<=2;k++){const d=1.9+2.0*k; for(const off of [-1.5,-0.5,0.5,1.5]) SPOTS.push({x:MIHRAB.x-AX.x*d+PERP.x*off, z:MIHRAB.z-AX.z*d+PERP.z*off});}
+// nafl spots: separate rugs behind the jamaat rows, each worshipper alone, spaced apart
+const NAFL_SPOTS=[];
+for(const off of [-2.4,-0.8,0.8,2.4]) NAFL_SPOTS.push({x:MIHRAB.x-AX.x*8.3+PERP.x*off, z:MIHRAB.z-AX.z*8.3+PERP.z*off, nafl:true});
+for(const off of [-1.6,0,1.6]) NAFL_SPOTS.push({x:MIHRAB.x-AX.x*10.6+PERP.x*off, z:MIHRAB.z-AX.z*10.6+PERP.z*off, nafl:true});
 const qiblaYaw=(x,z)=>Math.atan2(MIHRAB.x-x, MIHRAB.z-z);
 // rugs
 {
@@ -270,9 +286,11 @@ const qiblaYaw=(x,z)=>Math.atan2(MIHRAB.x-x, MIHRAB.z-z);
     g.strokeStyle='#e8c66a';g.lineWidth=3;g.stroke();});
   const it=canvasTex(128,256,(g,w,h)=>{g.fillStyle='#1d4e89';g.fillRect(0,0,w,h);g.strokeStyle='#f1d27a';g.lineWidth=8;g.strokeRect(6,6,w-12,h-12);
     g.fillStyle='#123766';g.beginPath();g.moveTo(24,90);g.quadraticCurveTo(24,30,64,22);g.quadraticCurveTo(104,30,104,90);g.lineTo(104,230);g.lineTo(24,230);g.closePath();g.fill();g.strokeStyle='#f1d27a';g.lineWidth=3;g.stroke();});
-  for(const s of SPOTS){
+  const nt=canvasTex(128,256,(g,w,h)=>{g.fillStyle='#2e6b3a';g.fillRect(0,0,w,h);g.strokeStyle='#e8d48a';g.lineWidth=8;g.strokeRect(6,6,w-12,h-12);
+    g.fillStyle='#1f4d29';g.beginPath();g.moveTo(24,90);g.quadraticCurveTo(24,30,64,22);g.quadraticCurveTo(104,30,104,90);g.lineTo(104,230);g.lineTo(24,230);g.closePath();g.fill();g.strokeStyle='#e8d48a';g.lineWidth=3;g.stroke();});
+  for(const s of SPOTS.concat(NAFL_SPOTS)){
     const yaw=qiblaYaw(s.x,s.z);
-    const rug=new THREE.Mesh(new THREE.PlaneGeometry(0.95,1.8),new THREE.MeshLambertMaterial({map:(s.imam?it:rt).t}));
+    const rug=new THREE.Mesh(new THREE.PlaneGeometry(0.95,1.8),new THREE.MeshLambertMaterial({map:(s.imam?it:s.nafl?nt:rt).t}));
     // plane: +Y of texture (top, arch) must point toward the qibla
     rug.rotation.order='YXZ'; rug.rotation.y=yaw+Math.PI; rug.rotation.x=-Math.PI/2;
     const c=0.3; rug.position.set(s.x+Math.sin(yaw)*c,0.035,s.z+Math.cos(yaw)*c); scene.add(rug);
@@ -397,7 +415,7 @@ const imamEl=document.createElement('div'); imamEl.className='imam'; imamEl.styl
 
 // qibla lines
 const qMat=new THREE.LineDashedMaterial({color:0xffd23f,dashSize:0.25,gapSize:0.15});
-const qLines=[]; for(let i=0;i<9;i++){const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]); const l=new THREE.Line(g,qMat); l.visible=false; scene.add(l); qLines.push(l);}
+const qLines=[]; for(let i=0;i<16;i++){const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]); const l=new THREE.Line(g,qMat); l.visible=false; scene.add(l); qLines.push(l);}
 
 // ---------- simulation ----------
 let simMs=Date.now(), speed=1, prayer=null;
@@ -409,7 +427,7 @@ function pathBack(b){return [{x:31.9,z:11.5},{x:30.3,z:11.5},{x:30.3,z:b.aisleZ}
 
 function startPrayer(key){
   if(prayer) endPrayer(true);
-  const cand=bots.filter(b=>!b.director&&!b.reception);
+  const cand=bots.filter(b=>!b.director&&!b.reception&&!b.nafl);
   const free=cand.filter(b=>b.state==='free'), busy=cand.filter(b=>b.state!=='free');
   const group=free.concat(busy).slice(0,9);
   prayer={key,name:PRAYERS[key].name,steps:buildSteps(key),phase:'gather',idx:0,t:0,group,gt:0};
@@ -433,6 +451,7 @@ function prayerStatus(){
 }
 function botStatus(b){
   if(b.director) return 'Директор · '+b.task;
+  if(b.nafl) return naflBotStatus(b);
   if(b.state==='pray') return prayerStatus()+(prayer&&b===prayer.group[0]?' (имам)':'');
   if(b.state==='toPray') return (prayer?prayer.name:'Намаз')+' · идёт в намазхану';
   if(b.returning) return 'Возвращается на рабочее место';
@@ -440,6 +459,46 @@ function botStatus(b){
   if(prayer) return 'Свободен · хатм на паузе — идёт намаз';
   const [s,a]=ayahOf(khatm.i); return 'Свободен · читает Мусхаф · хатм '+s+':'+a+' ('+SURA[s-1]+')';
 }
+// ---------- nafl prayer (individual, no imam, no adhan/iqama) ----------
+const naflUI={msg:'',msgT:0};
+function isFreeForNafl(b){return !b.director&&!b.reception&&!b.nafl&&b.state==='free'&&!b.path.length&&!b.returning&&!(prayer&&prayer.group.includes(b));}
+function naflBots(){return bots.filter(b=>b.nafl);}
+function sendNafl(want){
+  want=want||7;
+  const used=new Set(naflBots().map(b=>b.nafl.spot));
+  const spots=NAFL_SPOTS.filter(s=>!used.has(s));
+  const free=bots.filter(isFreeForNafl);
+  const n=Math.min(want,free.length,spots.length);
+  const sent=free.slice(0,n);
+  sent.forEach((b,i)=>{b.nafl={spot:spots[i],phase:'walk',steps:buildNaflSteps(),idx:0,t:0}; b.state='nafl'; b.path=pathTo(b,spots[i]); b.h.mushaf.visible=false;});
+  let msg;
+  if(n===want) msg='🕌 На нафиль-намаз (2 ракаата) отправлено '+n+' свободных ботов: '+sent.map(b=>b.name).join(', ');
+  else if(!spots.length) msg='Все '+NAFL_SPOTS.length+' ковриков для нафиля заняты — новые боты пойдут после салама';
+  else if(n===0) msg='Сейчас нет свободных ботов — на нафиль-намаз никто не отправлен';
+  else msg='⚠️ Свободных '+(spots.length<free.length?'мест на коврах':'ботов')+' только '+n+' из '+want+' — на нафиль-намаз отправлено '+n+': '+sent.map(b=>b.name).join(', ');
+  showToast(msg); naflUI.msg=msg;
+  return {sent:n,want,names:sent.map(b=>b.name)};
+}
+function naflStep(b){return b.nafl&&b.nafl.phase==='pray'?b.nafl.steps[b.nafl.idx]:null;}
+function naflBotStatus(b){
+  const N=b.nafl; if(N.phase==='walk') return NAFL_STATUS+' · идёт в намазхану';
+  if(N.phase==='stand') return NAFL_STATUS+' · на коврике, лицом к кибле';
+  const s=naflStep(b); return NAFL_STATUS+' · ракаат '+s.r+' из 2 · '+s.label;
+}
+function finishNafl(b){b.nafl=null; b.state='free'; b.timer=60+Math.random()*180; b.path=pathBack(b); b.returning=true;}
+function simulateNafl(dt){
+  for(const b of bots){ const N=b.nafl; if(!N) continue;
+    if(N.phase==='walk'&&!b.path.length){N.phase='stand'; N.t=0;}
+    else if(N.phase==='stand'){N.t+=dt; if(N.t>=1){N.phase='pray'; N.t=0; N.idx=0;}}
+    else if(N.phase==='pray'){N.t+=dt; while(b.nafl&&N.t>=N.steps[N.idx].dur){N.t-=N.steps[N.idx].dur; N.idx++; if(N.idx>=N.steps.length) finishNafl(b);} }
+  }
+}
+function naflSeek(label,stagger){ // test hook: put every nafl bot on its rug at the given step
+  const list=naflBots(); list.forEach((b,i)=>{const N=b.nafl; b.x=N.spot.x; b.z=N.spot.z; b.path=[]; N.phase='pray'; let k=N.steps.findIndex(s=>s.label===label); if(k<0) k=0; N.idx=Math.min(N.steps.length-1,k+(stagger?i%3:0)); N.t=0;});
+  snapPoses(); return list.length; }
+let toastTimer=null;
+function showToast(t){const el=document.getElementById('toast'); if(!el) return; el.textContent=t; el.style.display='block'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>{el.style.display='none';},9000);}
+document.getElementById('naflBtn').onclick=()=>sendNafl(7);
 function seekStep(match){ if(!prayer) return false; snapToSpots(); const i=prayer.steps.findIndex(s=>typeof match==='function'?match(s):(s.label===match||prayer.name+' '+s.label===match)); if(i<0) return false; prayer.idx=i; prayer.t=0; snapPoses(); return true; }
 let snapNext=false; function snapPoses(){snapNext=true;}
 
@@ -460,6 +519,7 @@ function simulate(dtReal){
     if(b.path.length){ const sp=1.4*dt; let rem=sp; while(rem>0&&b.path.length){const t=b.path[0], dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<1e-4){b.path.shift();continue;} b.yaw=Math.atan2(dx,dz); if(d<=rem){b.x=t.x;b.z=t.z;rem-=d;b.path.shift();} else {b.x+=dx/d*rem;b.z+=dz/d*rem;rem=0;}}
       b.walkPh+=dt*7; if(!b.path.length){ if(b.state==='toPray') b.state='atSpot'; if(b.returning){b.returning=false; b.yaw=b.seat.yaw;} } }
   }
+  simulateNafl(dt);
   // khatm (paused during prayer)
   if(!prayer&&readers>0){ khatm.acc+=dt*readers/30; while(khatm.acc>=1){khatm.acc-=1; khatm.i++; if(khatm.i>=TOTAL_AYAT){khatm.i=0;khatm.done++;} } }
   // prayer phases
@@ -480,6 +540,7 @@ function updateBots(dtReal){
     if(walking) target=POSES.stand;
     else if(b.state==='pray'&&step) target=POSES[step.pose];
     else if(b.state==='atSpot') target=POSES.stand;
+    else if(b.nafl){const ns=naflStep(b); target=ns?POSES[ns.pose]:POSES.stand;}
     else if(b.state==='free'&&!prayer&&!b.director) target=POSES.read;
     else target=POSES.chair;
     lerpPose(b.P,target,k);
@@ -488,7 +549,7 @@ function updateBots(dtReal){
     else if(target===POSES.chair&&b.state==='work'){const s=Math.sin(performance.now()/120+b.x*3); P.le+=0.08*s; P.re-=0.08*s;}
     applyPose(b.h,P);
     // facing: at prayer spot -> strictly toward the mihrab (vector from worshipper to mihrab)
-    if((b.state==='pray'||b.state==='atSpot')&&!walking) b.yaw=qiblaYaw(b.x,b.z);
+    if((b.state==='pray'||b.state==='atSpot'||b.nafl)&&!walking) b.yaw=qiblaYaw(b.x,b.z);
     else if(!walking&&!b.returning&&(b.state==='work'||b.state==='free')&&b.x===b.seat.x&&b.z===b.seat.z) b.yaw=b.seat.yaw;
     b.h.root.position.set(b.x,0,b.z); b.h.root.rotation.y=b.yaw;
     b.h.mushaf.visible=(target===POSES.read);
@@ -496,7 +557,8 @@ function updateBots(dtReal){
   snapNext=false;
   // qibla lines
   const show=document.getElementById('qlines').checked && prayer && prayer.phase==='pray';
-  qLines.forEach((l,i)=>{const b=prayer&&prayer.group[i]; if(show&&b){const a=l.geometry.attributes.position; a.setXYZ(0,b.x,0.06,b.z); a.setXYZ(1,MIHRAB.x,0.06,MIHRAB.z); a.needsUpdate=true; l.computeLineDistances(); l.visible=true;} else l.visible=false;});
+  const nl=naflBots().filter(b=>b.nafl.phase!=='walk'); const showN=document.getElementById('qlines').checked;
+  qLines.forEach((l,i)=>{const b=i<9?(prayer&&prayer.group[i]):nl[i-9]; if((i<9?show:showN)&&b){const a=l.geometry.attributes.position; a.setXYZ(0,b.x,0.06,b.z); a.setXYZ(1,MIHRAB.x,0.06,MIHRAB.z); a.needsUpdate=true; l.computeLineDistances(); l.visible=true;} else l.visible=false;});
 }
 
 // ---------- cameras & controls ----------
@@ -554,6 +616,11 @@ function updatePanel(){
   document.getElementById('khatmBar').style.width=pct.toFixed(2)+'%';
   document.getElementById('khatmSub').textContent=(prayer?'Хатм на паузе — идёт намаз. ':'Читают сейчас: '+readers+' бот(ов). ')+'Прочитано '+khatm.i+' из '+TOTAL_AYAT+' аятов (1:1 Аль-Фатиха → 114:6 Ан-Нас). Завершённых хатмов: '+khatm.done+'.';
   document.getElementById('tasks').innerHTML=bots.map(b=>'<div class="t"><span class="dot" style="background:'+hex(DEPTS[b.dept].color)+'"></span><span><b>'+b.name+'</b> — '+botStatus(b)+'</span></div>').join('');
+  const nb=naflBots(), nbox=document.getElementById('naflBox');
+  if(nb.length){nbox.style.display='block'; document.getElementById('nStatus').textContent=NAFL_STATUS+' · совершают '+nb.length+' бот(ов), каждый отдельно, без имама';
+    document.getElementById('nSub').innerHTML=nb.map(b=>'<div>• <b>'+b.name+'</b> — '+naflBotStatus(b).replace(NAFL_STATUS+' · ','')+'</div>').join('')+(naflUI.msg?'<div style="margin-top:4px;color:#ffd77a">'+naflUI.msg+'</div>':'');}
+  else {nbox.style.display='none'; naflUI.msg='';}
+  document.getElementById('naflBtn').title='Свободных сейчас: '+bots.filter(isFreeForNafl).length;
   if(cardBot) document.getElementById('cStatus').textContent=botStatus(cardBot);
   drawBoard(s,a,pct,readers);
 }
@@ -570,6 +637,7 @@ function drawBoard(s,a,pct,readers){
   g.fillStyle='#fff'; g.font='bold 36px sans-serif'; g.fillText(pct.toFixed(2)+'%  ·  '+khatm.i+'/'+TOTAL_AYAT,x0,284);
   g.font='28px sans-serif'; g.fillStyle='#d8efe2'; g.fillText(prayer?'Пауза: идёт намаз':'Читают: '+readers+' ботов',x0,340); g.fillText('Завершено хатмов: '+khatm.done,x0,385);
   if(prayer){g.fillStyle='#ffd77a'; g.font='bold 30px sans-serif'; g.fillText(prayerStatus().slice(0,52),x0,440);}
+  else {const nn=bots.filter(b=>b.nafl).length; if(nn){g.fillStyle='#9fe8bf'; g.font='bold 30px sans-serif'; g.fillText(NAFL_STATUS+': '+nn+' ботов',x0,440);}}
   board.t.needsUpdate=true;
 }
 
@@ -577,7 +645,7 @@ function drawBoard(s,a,pct,readers){
 function project(x,y,z,r){_v.set(x,y,z).project(camera()); if(_v.z>1) return null; return {x:(_v.x+1)/2*r.width,y:(1-_v.y)/2*r.height};}
 function updateLabels(){
   const r=view.getBoundingClientRect(); const wp=new THREE.Vector3();
-  for(const b of bots){ b.h.head.getWorldPosition(wp); const p=project(wp.x,wp.y+0.5,wp.z,r); if(!p){b.el.style.display='none';continue;} b.el.style.display=''; b.el.style.left=p.x+'px'; b.el.style.top=p.y+'px'; b.el.classList.toggle('pray',b.state==='pray'); }
+  for(const b of bots){ b.h.head.getWorldPosition(wp); const p=project(wp.x,wp.y+0.5,wp.z,r); if(!p){b.el.style.display='none';continue;} b.el.style.display=''; b.el.style.left=p.x+'px'; b.el.style.top=p.y+'px'; b.el.classList.toggle('pray',b.state==='pray'||!!(b.nafl&&b.nafl.phase!=='walk')); }
   for(const z of ZONES){const p=project(z.x,z.y||0.1,z.z,r); if(!p){z.el.style.display='none';continue;} z.el.style.display=''; z.el.style.left=p.x+'px'; z.el.style.top=p.y+'px';}
   if(prayer&&prayer.phase==='pray'){const im=prayer.group[0]; im.h.head.getWorldPosition(wp); const p=project(wp.x,Math.max(wp.y,1.2)+1.0,wp.z,r); if(p){imamEl.style.display=''; imamEl.style.left=p.x+'px'; imamEl.style.top=p.y+'px'; imamEl.textContent='🕌 '+prayerStatus();}} else imamEl.style.display='none';
 }
@@ -592,7 +660,7 @@ function frame(now){
   saveT+=dt; if(saveT>3){saveT=0; saveKhatm();}
   requestAnimationFrame(frame);
 }
-resize(); updatePanel(); requestAnimationFrame(frame);
+resize(); sendNafl(7); updatePanel(); requestAnimationFrame(frame);
 window.addEventListener('beforeunload',saveKhatm);
 
 // ---------- auto update (http only) ----------
@@ -601,7 +669,7 @@ if(/^https?:$/.test(location.protocol)){
 }
 
 // test / debug hooks
-window.__office={BUILD,bots,startPrayer,seekStep,snapToSpots,endPrayer,setView,setSpeed,openCard:n=>openCard(byName(n)),orbit,topv,
+window.__office={BUILD,bots,sendNafl,naflSeek,NAFL_SPOTS,naflStatus:()=>naflBots().map(b=>b.name+': '+botStatus(b)),startPrayer,seekStep,snapToSpots,endPrayer,setView,setSpeed,openCard:n=>openCard(byName(n)),orbit,topv,
   get prayer(){return prayer;}, status:prayerStatus, SPOTS, MIHRAB, total:TOTAL_AYAT, schedule:()=>scheduleFor(simMs).map(e=>e.name+' '+fmtMs(e.ms)),
   setT:(t)=>{if(prayer)prayer.t=t;}, fmt:fmtMs};
 })();
